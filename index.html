@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barnsjukdomar - Provtränaren</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .game-container {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .score-item {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 1.1em;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+        }
+        
+        .category-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .category-btn {
+            padding: 20px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .category-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .category-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .cat-smittvagar { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .cat-bakvirus { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .cat-sjukdomar { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .cat-behandling { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; }
+        .cat-mix { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #333; }
+        
+        .question-box {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .question-text {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.4;
+            font-weight: 600;
+        }
+        
+        .answers-grid {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .answer-btn {
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .answer-btn:hover:not(.disabled) {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateX(5px);
+        }
+        
+        .answer-btn.correct {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+            animation: pulse 0.5s;
+        }
+        
+        .answer-btn.wrong {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        
+        .answer-btn.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        .feedback {
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            font-weight: 600;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        
+        .feedback.wrong {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        
+        .next-btn, .restart-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .next-btn:hover, .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        
+        .start-screen, .end-screen {
+            text-align: center;
+        }
+        
+        .start-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            border-radius: 30px;
+            font-size: 1.3em;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.3s;
+        }
+        
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+        
+        .emoji {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        
+        .hint-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.95em;
+            color: #856404;
+        }
+        
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .category-selector {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>🎮 Barnsjukdomar - Provtränaren</h1>
+            <p>Förbered dig inför provet fredag 13/2!</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+        </div>
+        
+        <div class="score-board">
+            <div class="score-item">Poäng: <span id="score">0</span>/10</div>
+            <div class="score-item">Streak: <span id="streak">0</span>🔥</div>
+            <div class="score-item">Fråga: <span id="questionNum">0</span>/10</div>
+        </div>
+        
+        <div id="gameContent">
+            <!-- Start Screen -->
+            <div class="start-screen" id="startScreen">
+                <div class="emoji">🧸🏥</div>
+                <h2>Välj kategori för att börja träna!</h2>
+                <p style="margin: 20px 0; color: #666;">Testa dina kunskaper om smittvägar, bakterier vs virus, och vanliga barnsjukdomar.</p>
+                
+                <div class="category-selector">
+                    <button class="category-btn cat-smittvagar" onclick="startGame('smittvagar')">🦠 Smittvägar</button>
+                    <button class="category-btn cat-bakvirus" onclick="startGame('bakvirus')">🔬 Bakterier & Virus</button>
+                    <button class="category-btn cat-sjukdomar" onclick="startGame('sjukdomar')">🤒 Sjukdomar</button>
+                    <button class="category-btn cat-behandling" onclick="startGame('behandling')">💊 Behandling</button>
+                    <button class="category-btn cat-mix" onclick="startGame('mix')">🎯 Mixat (Allt)</button>
+                </div>
+            </div>
+            
+            <!-- Question Screen -->
+            <div id="questionScreen" style="display: none;">
+                <div class="question-box">
+                    <div class="question-text" id="questionText"></div>
+                    <div class="answers-grid" id="answersGrid"></div>
+                </div>
+                <div class="feedback" id="feedback"></div>
+                <button class="next-btn" id="nextBtn" style="display: none;" onclick="nextQuestion()">Nästa fråga ➜</button>
+            </div>
+            
+            <!-- End Screen -->
+            <div class="end-screen" id="endScreen" style="display: none;">
+                <div class="emoji" id="endEmoji">🎉</div>
+                <h2 id="endTitle">Bra jobbat!</h2>
+                <p id="endMessage" style="font-size: 1.2em; margin: 20px 0;"></p>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin: 20px 0;">
+                    <h3>Ditt resultat:</h3>
+                    <p style="font-size: 2em; font-weight: 800; color: #667eea; margin: 10px 0;"><span id="finalScore">0</span>/10</p>
+                    <p id="gradeText" style="font-weight: 600;"></p>
+                </div>
+                <button class="restart-btn" onclick="resetGame()">Spela igen 🔄</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Alla frågor baserade på PDF-innehållet
+        const allQuestions = {
+            smittvagar: [
+                {
+                    q: "Vad kallas smitta som sker vid fysisk kontakt utan mellanled?",
+                    options: ["Direkt kontaktsmitta", "Indirekt kontaktsmitta", "Droppsmitta", "Luftburen smitta"],
+                    correct: 0,
+                    hint: "Exempel är impetigo (svinkoppor) och herpesinfektioner."
+                },
+                {
+                    q: "Hur långt når vanligtvis dropparna vid droppsmitta?",
+                    options: ["10 meter", "5 meter", "Någon meter", "50 meter"],
+                    correct: 2,
+                    hint: "Dropparna faller snabbt ner i luften."
+                },
+                {
+                    q: "Vilket virus sprids via aerosol (luftburen smitta)?",
+                    options: ["Calicivirus", "Vattkoppor och influensa", "RS-virus", "Rotavirus"],
+                    correct: 1,
+                    hint: "Aerosol uppstår när droppar torkar ihop till mindre droppkärnor (<5μm)."
+                },
+                {
+                    q: "Vad är exempel på indirekt kontaktsmitta?",
+                    options: ["Handslag", "Kramar", "Förorenade dörrhandtag", "Kyssar"],
+                    correct: 2,
+                    hint: "Smittan överförs via föremål som mellanled."
+                },
+                {
+                    q: "Hvilken smittväg gäller för hepatit B och C samt HIV?",
+                    options: ["Droppsmitta", "Kontaktsmitta", "Blodburen smitta", "Fekal-oral smitta"],
+                    correct: 2,
+                    hint: "Sker via blod till blod eller slemhinna."
+                },
+                {
+                    q: "Hur sprids calicivirus som orsakar vinterkräksjuka?",
+                    options: ["Endast droppsmitta", "Endast kontaktsmitta", "Både droppsmitta och indirekt kontaktsmitta", "Luftburen smitta"],
+                    correct: 2,
+                    hint: "Dropparna kan falla på föremål och ytor."
+                },
+                {
+                    q: "Vad är en viktig åtgärd för att förhindra kontaktsmitta?",
+                    options: [" vaccination", "Handhygien", "Antibiotika", "Kortison"],
+                    correct: 1,
+                    hint: "Speciellt viktigt i barngrupper."
+                },
+                {
+                    q: "Vid vilken typ av smitta är avstånd viktigast?",
+                    options: ["Kontaktsmitta", "Droppsmitta", "Blodburen smitta", "Alla typer"],
+                    correct: 1,
+                    hint: "Hosta och nysningar sprider droppar."
+                }
+            ],
+            bakvirus: [
+                {
+                    q: "Vad är huvudskillnaden mellan bakterier och virus?",
+                    options: ["Bakterier är större än virus", "Bakterier kan föröka sig själva, virus måste kapa en värdcell", "Virus är farligare än bakterier", "Bakterier finns bara i kroppen"],
+                    correct: 1,
+                    hint: "Bakterier är som små egna fabriker som kan producera egen energi."
+                },
+                {
+                    q: "Hur många procent av luftvägsinfektioner orsakas av virus?",
+                    options: ["50%", "70%", "Över 90%", "30%"],
+                    correct: 2,
+                    hint: "Tänk på förkylning som exempel."
+                },
+                {
+                    q: "Vad behandlas bakterieinfektioner med?",
+                    options: ["Antibiotika", "Antivirala medel", "Kortison", "Smärtstillande"],
+                    correct: 0,
+                    hint: "Fungerar inte mot virus!"
+                },
+                {
+                    q: "Vad står MRSA för?",
+                    options: ["Mycket Resistent Stafylokock Av", "Methicillin-Resistenta Stafylokocker", "Multi-Resistent SjukdomsAgent", "Modern Resistens mot Sjukdomar A"],
+                    correct: 1,
+                    hint: "En typ av multiresistent bakterie."
+                },
+                {
+                    q: "Vad står VRI för?",
+                    options: ["VårdRelaterad Infektion", "VirusResistent Infektion", "Vanlig Respiratorisk Infektion", "VaccinResistent Infektion"],
+                    correct: 0,
+                    hint: "Infektion som fått i vården."
+                },
+                {
+                    q: "Kan virus behandlas med antibiotika?",
+                    options: ["Ja, alltid", "Ja, ibland", "Nej, aldrig", "Bara vid hög feber"],
+                    correct: 2,
+                    hint: "Antibiotika påverkar bakterier, inte virus."
+                },
+                {
+                    q: "Vilket påstående om bakterier är sant?",
+                    options: ["Alla bakterier är skadliga", "De flesta bakterier har vi nytta av", "Bakterier kan inte dela sig", "Bakterier finns bara i sjuka människor"],
+                    correct: 1,
+                    hint: "Bakterier finns nästan överallt runt oss."
+                },
+                {
+                    q: "Vad kräver virus för att föröka sig?",
+                    options: ["Näringslösning", "En levande värdcell", "Antibiotika", "Höga temperaturer"],
+                    correct: 1,
+                    hint: "De måste kapa en värdcell."
+                }
+            ],
+            sjukdomar: [
+                {
+                    q: "Hur länge är man smittsam vid vattkoppor?",
+                    options: ["Tills febern går över", "Tills första blåsan kommer", "Tills sista blåsan torkat in och skorpan fallit av", "En vecka"],
+                    correct: 2,
+                    hint: "Barnen bör hållas hemma tills alla skorpor fallit av."
+                },
+                {
+                    q: "Vad är karakteristiskt för tredagarsfeber?",
+                    options: ["Utslag i tre dagar", "Hög feber i tre dagar, sedan utslag", "Feber som varar tre veckor", "Tre olika typer av utslag"],
+                    correct: 1,
+                    hint: "Drabbar oftast barn under tre år."
+                },
+                {
+                    q: "Vad orsakar scharlakansfeber?",
+                    options: ["Virus", "Streptokocker grupp A", "Stafylokocker", "Parasiter"],
+                    correct: 1,
+                    hint: "Bakterieinfektion som drabbar barn 3-8 år."
+                },
+                {
+                    q: "Vilken är en vanlig komplikation av påssjuka?",
+                    options: ["Blindhet", "Hjärnhinneinflammation", "Lunginflammation", "Hjärtinflammation"],
+                    correct: 1,
+                    hint: "Svullnad vid öron och underkäken."
+                },
+                {
+                    q: "Vad är 'Femte sjukan' kännetecknad av?",
+                    options: ["Prickar i munnen", "Röda sammanflytande fläckar i ansiktet", "Bara på händer och fötter", "Gula blåsor"],
+                    correct: 1,
+                    hint: "Ofta mild feber och kliande hud."
+                },
+                {
+                    q: "Hur länge varar en vanlig förkylning?",
+                    options: ["2-3 dagar", "1-2 veckor", "1 månad", "3 veckor"],
+                    correct: 1,
+                    hint: "Orsakas av virus, ungefär 200 olika förkylningsvirus finns."
+                },
+                {
+                    q: "Vad är typiskt för kikhosta?",
+                    options: ["Hostanfall följda av kippande andning", "Torrhosta utan paus", "Hosta som bara kommer på natten", "Hosta utan ljud"],
+                    correct: 0,
+                    hint: "Kan även leda till kräkningar."
+                },
+                {
+                    q: "Vilken åldersgrupp drabbas oftast av scharlakansfeber?",
+                    options: ["0-2 år", "3-8 år", "10-15 år", "Vuxna"],
+                    correct: 1,
+                    hint: "Skolåldern är vanligast."
+                }
+            ],
+            behandling: [
+                {
+                    q: "När behövs antibiotika vid öroninflammation? (Välj det som INTE stämmer)",
+                    options: ["Barn under 1 år", "Barn 1-12 år med hög feber och mycket ont", "Barn med sprucken trumhinna", "Alla barn med öroninflammation"],
+                    correct: 3,
+                    hint: "Många barn 1-12 år behöver INTE antibiotika."
+                },
+                {
+                    q: "Vad är första hjälpen vid feber?",
+                    options: ["Antibiotika direkt", "Extra mycket vätska, svalt rum, febernedsättande vid behov", "Varmt täcke och svettas ut", "Kall dusch"],
+                    correct: 1,
+                    hint: "Feber är ett uttryck för aktivt infektionsförsvar."
+                },
+                {
+                    q: "Hur behandlas svinkoppor (impetigo) först?",
+                    options: ["Direkt antibiotika", "Noggrann tvätt med tvål och vatten", "Kortisonkräm", "Låt bli att tvätta"],
+                    correct: 1,
+                    hint: "Tvätta morgon och kväll, blöta upp skorporna."
+                },
+                {
+                    q: "Vad gäller vid ögoninflammation?",
+                    options: ["Alltid antibiotika", "Självläkande i de flesta fall, tvätta ögonen", "Kortisondroppar", "Ingen behandling behövs"],
+                    correct: 1,
+                    hint: "Kan orsakas av både bakterier och virus."
+                },
+                {
+                    q: "Vid torsk (Candida albicans) i munnen - vad kan användas vid lindriga fall?",
+                    options: ["Penicillin", "Vichyvatten", "Kortison", "Ingen behandling"],
+                    correct: 1,
+                    hint: "Pensla med vichyvatten vid lindriga fall."
+                },
+                {
+                    q: "Vad är viktigt vid hand-fot-mun-sjukdom?",
+                    options: ["Antibiotika", "Mycket vätska, ev. mosad mat", "Vila i mörkt rum", "Kall kompress på fötterna"],
+                    correct: 1,
+                    hint: "Blåsor i munnen kan göra det svårt att äta."
+                },
+                {
+                    q: "När bör spädbarn under 3 månader med feber undersökas av läkare?",
+                    options: ["Endast vid 40 grader", "Samma dag vid över 38,0 grader", "Efter 3 dagar", "Aldrig, det är normalt"],
+                    correct: 1,
+                    hint: "De har ännu inte så utvecklat immunförsvar."
+                },
+                {
+                    q: "Vad är behandlingen vid mässling?",
+                    options: ["Antibiotika", "Ingen specifik behandling, febernedsättande, svalt mörkt rum", "Antivirala medel", "Kortison"],
+                    correct: 1,
+                    hint: "En av världens mest smittsamma sjukdomar."
+                }
+            ],
+            mix: [] // Fylls på slumpmässigt från andra kategorier
+        };
+
+        let currentQuestions = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let streak = 0;
+        let selectedCategory = '';
+        
+        // Fyll mix-kategorin med slumpmässiga frågor från alla andra kategorier
+        function prepareMixQuestions() {
+            const mix = [];
+            const categories = ['smittvagar', 'bakvirus', 'sjukdomar', 'behandling'];
+            categories.forEach(cat => {
+                const shuffled = [...allQuestions[cat]].sort(() => 0.5 - Math.random());
+                mix.push(...shuffled.slice(0, 3)); // 3 frågor från varje kategori
+            });
+            allQuestions.mix = mix.sort(() => 0.5 - Math.random());
+        }
+
+        function startGame(category) {
+            selectedCategory = category;
+            if (category === 'mix') {
+                prepareMixQuestions();
+            }
+            currentQuestions = allQuestions[category].slice(0, 10);
+            currentQuestion = 0;
+            score = 0;
+            streak = 0;
+            
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('endScreen').style.display = 'none';
+            document.getElementById('questionScreen').style.display = 'block';
+            
+            updateScore();
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = currentQuestions[currentQuestion];
+            document.getElementById('questionText').textContent = `${currentQuestion + 1}. ${q.q}`;
+            document.getElementById('questionNum').textContent = currentQuestion + 1;
+            document.getElementById('progressBar').style.width = `${(currentQuestion / 10) * 100}%`;
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            const grid = document.getElementById('answersGrid');
+            grid.innerHTML = '';
+            
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'answer-btn';
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(idx);
+                grid.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected) {
+            const q = currentQuestions[currentQuestion];
+            const buttons = document.querySelectorAll('.answer-btn');
+            const feedback = document.getElementById('feedback');
+            
+            buttons.forEach((btn, idx) => {
+                btn.classList.add('disabled');
+                btn.onclick = null;
+                if (idx === q.correct) {
+                    btn.classList.add('correct');
+                } else if (idx === selected && idx !== q.correct) {
+                    btn.classList.add('wrong');
+                }
+            });
+            
+            if (selected === q.correct) {
+                score++;
+                streak++;
+                feedback.textContent = `✅ Rätt! ${q.hint || ''}`;
+                feedback.className = 'feedback correct';
+            } else {
+                streak = 0;
+                feedback.innerHTML = `❌ Fel! Rätt svar var: ${q.options[q.correct]}<br><small>${q.hint || ''}</small>`;
+                feedback.className = 'feedback wrong';
+            }
+            
+            feedback.style.display = 'block';
+            document.getElementById('nextBtn').style.display = 'block';
+            updateScore();
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < 10 && currentQuestion < currentQuestions.length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('streak').textContent = streak;
+        }
+
+        function endGame() {
+            document.getElementById('questionScreen').style.display = 'none';
+            document.getElementById('endScreen').style.display = 'block';
+            document.getElementById('progressBar').style.width = '100%';
+            document.getElementById('finalScore').textContent = score;
+            
+            const percentage = (score / Math.min(10, currentQuestions.length)) * 100;
+            let emoji, title, message, grade;
+            
+            if (percentage >= 90) {
+                emoji = '🏆🌟';
+                title = 'Fantastiskt!';
+                message = 'Du är redo för provet! Perfekt förberedelse!';
+                grade = 'Betyg: A (Utmärkt)';
+            } else if (percentage >= 70) {
+                emoji = '🎉👍';
+                title = 'Bra jobbat!';
+                message = 'Du har bra koll på barnsjukdomarna!';
+                grade = 'Betyg: B (Bra)';
+            } else if (percentage >= 50) {
+                emoji = '👌📚';
+                title = 'Godkänd!';
+                message = 'Du klarar dig, men öva gärna mer på områdena du missade.';
+                grade = 'Betyg: C (Godkänd)';
+            } else {
+                emoji = '📖💪';
+                title = 'Fortsätt öva!';
+                message = 'Läs igenom PDF:en en gång till innan provet fredag 13/2.';
+                grade = 'Betyg: D (Behöver öva mer)';
+            }
+            
+            document.getElementById('endEmoji').textContent = emoji;
+            document.getElementById('endTitle').textContent = title;
+            document.getElementById('endMessage').textContent = message;
+            document.getElementById('gradeText').textContent = grade;
+        }
+
+        function resetGame() {
+            document.getElementById('endScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('score').textContent = '0';
+            document.getElementById('streak').textContent = '0';
+            document.getElementById('questionNum').textContent = '0';
+        }
+    </script>
+</body>
+</html>
